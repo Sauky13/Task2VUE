@@ -8,7 +8,7 @@ Vue.component('Board', {
           <button type="button" @click="removeItem(index)" v-if="newCardItems.length > 3">-</button>
         </div>
         <button type="button" @click="addItem" v-if="newCardItems.length < 5">+</button>
-        <button type="submit">Добавить</button>
+        <button class="button-add" type="submit">Добавить</button>
       </form>
       <Column title="0%" :cards="cards0"></Column>
       <Column title="50%" :cards="cards50"></Column>
@@ -167,7 +167,7 @@ Vue.component('ListItem', {
   props: ['item'],
   template: `
     <li>
-      <input type="checkbox" v-model="item.checked" :disabled="item.disabled || item.checked" @click.prevent="item.checked || (item.checked = true)">
+      <input class="checkbox" type="checkbox" v-model="item.checked" :disabled="item.disabled || item.checked" @click.prevent="item.checked || (item.checked = true)">
       <span>{{ item.text }}</span>
     </li>
   `,
