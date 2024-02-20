@@ -163,12 +163,11 @@ Vue.component('Card', {
     },
   },
 });
-
 Vue.component('ListItem', {
   props: ['item'],
   template: `
     <li>
-    <input type="checkbox" v-model="item.checked" :disabled="item.disabled">
+      <input type="checkbox" v-model="item.checked" :disabled="item.disabled || item.checked" @click.prevent="item.checked || (item.checked = true)">
       <span>{{ item.text }}</span>
     </li>
   `,
