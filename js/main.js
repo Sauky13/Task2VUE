@@ -18,9 +18,9 @@ Vue.component('Board', {
   data() {
     return {
       newCardTitle: '',
-      cards0: [],
-      cards50: [],
-      cards100: [],
+      cards0: JSON.parse(localStorage.getItem('cards0')) || [],
+      cards50: JSON.parse(localStorage.getItem('cards50')) || [],
+      cards100: JSON.parse(localStorage.getItem('cards100')) || [],
       newCardItems: Array.from({ length: 3 }, () => ({ text: '', checked: false })),
       maxCardsInFirstColumn: 3,
       maxCardsInSecondColumn: 5,
@@ -45,6 +45,8 @@ Vue.component('Board', {
         title: this.newCardTitle,
         items: this.newCardItems.map(item => ({ ...item, disabled: this.firstColumnBlocked })),
       });
+
+      this.saveLocale();
 
       this.newCardTitle = '';
       this.newCardItems = Array.from({ length: 3 }, () => ({ text: '', checked: false }));
@@ -87,6 +89,12 @@ Vue.component('Board', {
           item.disabled = this.firstColumnBlocked;
         });
       });
+      this.saveLocale();
+    },
+    saveLocale() {
+      localStorage.setItem('cards0', JSON.stringify(this.cards0));
+      localStorage.setItem('cards50', JSON.stringify(this.cards50));
+      localStorage.setItem('cards100', JSON.stringify(this.cards100));
     },
   },
   watch: {
@@ -167,7 +175,7 @@ Vue.component('ListItem', {
   props: ['item'],
   template: `
     <li>
-      <input class="checkbox" type="checkbox" v-model="item.checked" :disabled="item.disabled || item.checked" @click.prevent="item.checked || (item.checked = true)">
+      <input class="checkbox" type="checkbox" :checked="item.checked" :disabled="item.disabled || item.checked" @change="item.checked = $event.target.checked" @click.prevent="item.checked || (item.checked = true)">
       <span>{{ item.text }}</span>
     </li>
   `,
