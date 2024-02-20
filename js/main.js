@@ -18,9 +18,9 @@ Vue.component('Board', {
   data() {
     return {
       newCardTitle: '',
-      cards0: JSON.parse(localStorage.getItem('cards0')) || [],
-      cards50: JSON.parse(localStorage.getItem('cards50')) || [],
-      cards100: JSON.parse(localStorage.getItem('cards100')) || [],
+      cards0: this.loadCards('cards0'),
+      cards50: this.loadCards('cards50'),
+      cards100: this.loadCards('cards100'),
       newCardItems: Array.from({ length: 3 }, () => ({ text: '', checked: false })),
       maxCardsInFirstColumn: 3,
       maxCardsInSecondColumn: 5,
@@ -51,6 +51,15 @@ Vue.component('Board', {
       this.newCardTitle = '';
       this.newCardItems = Array.from({ length: 3 }, () => ({ text: '', checked: false }));
     },
+    loadCards(key) {
+      const cards = JSON.parse(localStorage.getItem(key)) || [];
+      cards.forEach(card => {
+        if (card.completedAt) {
+          card.completedAt = new Date(card.completedAt);
+        }
+      });
+      return cards;
+    },
     addItem() {
       this.newCardItems.push({ text: '' });
     },
@@ -66,9 +75,11 @@ Vue.component('Board', {
           card.completedAt = new Date();
           this.cards0.splice(index, 1);
           this.cards100.push(card);
+          this.saveLocale();
         } else if (progress >= 0.5 && this.cards50.length < this.maxCardsInSecondColumn) {
           this.cards0.splice(index, 1);
           this.cards50.push(card);
+          this.saveLocale();
         }
       });
 
@@ -80,9 +91,10 @@ Vue.component('Board', {
           card.completedAt = new Date();
           this.cards50.splice(index, 1);
           this.cards100.push(card);
+          this.saveLocale();
         }
       });
-
+      
       this.firstColumnBlocked = this.cards50.length === this.maxCardsInSecondColumn && this.cards0.length > 0;
       this.cards0.forEach(card => {
         card.items.forEach(item => {
@@ -175,7 +187,7 @@ Vue.component('ListItem', {
   props: ['item'],
   template: `
     <li>
-      <input class="checkbox" type="checkbox" :checked="item.checked" :disabled="item.disabled || item.checked" @change="item.checked = $event.target.checked" @click.prevent="item.checked || (item.checked = true)">
+      <input class="checkbox" type="checkbox" :checked="item.checked" :disabled="item.disabled || item.checked" @change="item.checked = $event.target.checked" >
       <span>{{ item.text }}</span>
     </li>
   `,
