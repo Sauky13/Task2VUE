@@ -31,15 +31,13 @@ Vue.component('Board', {
         alert('Карточка должна содержать минимум 3 пункив');
         return;
       }
-
-      // создаем новую карточку и добавляем ее в массив
+      
       this.cards0.push({
         id: Date.now(),
         title: this.newCardTitle,
         items: this.newCardItems,
       });
 
-      // сбрасываем поля ввода
       this.newCardTitle = '';
       this.newCardItems = Array.from({ length: 3 }, () => ({ text: '', checked: false }));
     },
@@ -55,6 +53,7 @@ Vue.component('Board', {
         const progress = checkedItems / card.items.length;
 
         if (progress === 1) {
+          card.completedAt = new Date();
           this.cards0.splice(index, 1);
           this.cards100.push(card);
         } else if (progress >= 0.5) {
@@ -68,6 +67,7 @@ Vue.component('Board', {
         const progress = checkedItems / card.items.length;
 
         if (progress === 1) {
+          card.completedAt = new Date();
           this.cards50.splice(index, 1);
           this.cards100.push(card);
         }
@@ -125,6 +125,7 @@ Vue.component('Card', {
       <ul>
         <ListItem v-for="item in card.items" :key="item.id" :item="item"></ListItem>
       </ul>
+      <p v-if="card.completedAt">Завершено: {{ formatDate(card.completedAt) }}</p>
     </div>
   `,
   data() {
@@ -135,6 +136,15 @@ Vue.component('Card', {
   methods: {
     addItem() {
       this.items.push({ id: Date.now(), checked: false });
+    },
+    formatDate(date) {
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear().toString().slice(2);
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+
+      return `${day}.${month}.${year} ${hours}:${minutes}`;
     },
   },
 });
