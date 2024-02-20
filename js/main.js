@@ -10,16 +10,18 @@ Vue.component('Board', {
         <button type="button" @click="addItem" v-if="newCardItems.length < 5">+</button>
         <button type="submit">Добавить</button>
       </form>
-      <Column title="0%" :cards="cards"></Column> <!-- передаем карточки в Column -->
-      <Column title="50%" maxCards="5"></Column>
-      <Column title="100%"></Column>
+      <Column title="0%" :cards="cards0"></Column>
+      <Column title="50%" :cards="cards50"></Column>
+      <Column title="100%" :cards="cards100"></Column>
     </div>
   `,
   data() {
     return {
       newCardTitle: '',
-      cards: [],
-      newCardItems: Array.from({ length: 3 }, () => ({ text: '' })),
+      cards0: [],
+      cards50: [],
+      cards100: [],
+      newCardItems: Array.from({ length: 3 }, () => ({ text: '', checked: false })),
     };
   },
   methods: {
@@ -31,21 +33,59 @@ Vue.component('Board', {
       }
 
       // создаем новую карточку и добавляем ее в массив
-      this.cards.push({
+      this.cards0.push({
         id: Date.now(),
         title: this.newCardTitle,
-        items: validItems,
+        items: this.newCardItems,
       });
 
       // сбрасываем поля ввода
       this.newCardTitle = '';
-      this.newCardItems = Array.from({ length: 3 }, () => ({ text: '' }));
+      this.newCardItems = Array.from({ length: 3 }, () => ({ text: '', checked: false }));
     },
     addItem() {
       this.newCardItems.push({ text: '' });
     },
     removeItem(index) {
       this.newCardItems.splice(index, 1);
+    },
+    checkCardProgress() {
+      this.cards0.forEach((card, index) => {
+        const checkedItems = card.items.filter(item => item.checked).length;
+        const progress = checkedItems / card.items.length;
+
+        if (progress === 1) {
+          this.cards0.splice(index, 1);
+          this.cards100.push(card);
+        } else if (progress >= 0.5) {
+          this.cards0.splice(index, 1);
+          this.cards50.push(card);
+        }
+      });
+
+      this.cards50.forEach((card, index) => {
+        const checkedItems = card.items.filter(item => item.checked).length;
+        const progress = checkedItems / card.items.length;
+
+        if (progress === 1) {
+          this.cards50.splice(index, 1);
+          this.cards100.push(card);
+        }
+      });
+    },
+  },
+  watch: {
+    cards0: {
+      handler() {
+        this.checkCardProgress();
+      },
+      deep: true,
+    },
+    cards50: {
+      handler() {
+        this.checkCardProgress();
+      },
+      deep: true,
     },
   },
 });
