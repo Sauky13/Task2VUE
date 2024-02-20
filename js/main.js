@@ -22,20 +22,28 @@ Vue.component('Board', {
       cards50: [],
       cards100: [],
       newCardItems: Array.from({ length: 3 }, () => ({ text: '', checked: false })),
+      maxCardsInFirstColumn: 3,
+      maxCardsInSecondColumn: 5,
+      firstColumnBlocked: false,
     };
   },
   methods: {
     addCard() {
       const validItems = this.newCardItems.filter(item => item.text.trim() !== '');
       if (validItems.length < 3) {
-        alert('Карточка должна содержать минимум 3 пункив');
+        alert('Карточка должна содержать минимум 3 пункта');
         return;
       }
-      
+
+      if (this.cards0.length >= this.maxCardsInFirstColumn) {
+        alert('Невозможно добавить больше карточек в первый столбец');
+        return;
+      }
+
       this.cards0.push({
         id: Date.now(),
         title: this.newCardTitle,
-        items: this.newCardItems,
+        items: this.newCardItems.map(item => ({ ...item, disabled: this.firstColumnBlocked })),
       });
 
       this.newCardTitle = '';
@@ -56,7 +64,7 @@ Vue.component('Board', {
           card.completedAt = new Date();
           this.cards0.splice(index, 1);
           this.cards100.push(card);
-        } else if (progress >= 0.5) {
+        } else if (progress >= 0.5 && this.cards50.length < this.maxCardsInSecondColumn) {
           this.cards0.splice(index, 1);
           this.cards50.push(card);
         }
@@ -71,6 +79,13 @@ Vue.component('Board', {
           this.cards50.splice(index, 1);
           this.cards100.push(card);
         }
+      });
+
+      this.firstColumnBlocked = this.cards50.length === this.maxCardsInSecondColumn && this.cards0.length > 0;
+      this.cards0.forEach(card => {
+        card.items.forEach(item => {
+          item.disabled = this.firstColumnBlocked;
+        });
       });
     },
   },
@@ -153,7 +168,7 @@ Vue.component('ListItem', {
   props: ['item'],
   template: `
     <li>
-      <input type="checkbox" v-model="item.checked">
+    <input type="checkbox" v-model="item.checked" :disabled="item.disabled">
       <span>{{ item.text }}</span>
     </li>
   `,
