@@ -1,7 +1,3 @@
-new Vue({
-  el: '#app',
-});
-
 Vue.component('Board', {
   template: `
     <div class="board">
@@ -14,7 +10,7 @@ Vue.component('Board', {
         <button type="button" @click="addItem" v-if="newCardItems.length < 5">+</button>
         <button type="submit">Добавить</button>
       </form>
-      <Column title="0%" maxCards="3"></Column>
+      <Column title="0%" :cards="cards"></Column> <!-- передаем карточки в Column -->
       <Column title="50%" maxCards="5"></Column>
       <Column title="100%"></Column>
     </div>
@@ -22,6 +18,7 @@ Vue.component('Board', {
   data() {
     return {
       newCardTitle: '',
+      cards: [],
       newCardItems: Array.from({ length: 3 }, () => ({ text: '' })),
     };
   },
@@ -32,6 +29,17 @@ Vue.component('Board', {
         alert('Карточка должна содержать минимум 3 пункив');
         return;
       }
+
+      // создаем новую карточку и добавляем ее в массив
+      this.cards.push({
+        id: Date.now(),
+        title: this.newCardTitle,
+        items: validItems,
+      });
+
+      // сбрасываем поля ввода
+      this.newCardTitle = '';
+      this.newCardItems = Array.from({ length: 3 }, () => ({ text: '' }));
     },
     addItem() {
       this.newCardItems.push({ text: '' });
@@ -43,7 +51,15 @@ Vue.component('Board', {
 });
 
 Vue.component('Column', {
-  props: ['title', 'maxCards'],
+  props: {
+    title: String,
+    cards: {
+      type: Array,
+      default: function () {
+        return [];
+      }
+    }
+  },
   template: `
     <div class="column">
       <h2>{{ title }}</h2>
@@ -52,11 +68,6 @@ Vue.component('Column', {
       </div>
     </div>
   `,
-  data() {
-    return {
-      cards: [],
-    };
-  },
   methods: {
     addCard() {
       if (!this.maxCards || this.cards.length < this.maxCards) {
@@ -70,7 +81,7 @@ Vue.component('Card', {
   props: ['card'],
   template: `
     <div class="card">
-      <h3>Card {{ card.id }}</h3>
+      <h3>{{ card.title }}</h3>
       <ul>
         <ListItem v-for="item in card.items" :key="item.id" :item="item"></ListItem>
       </ul>
