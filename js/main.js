@@ -40,6 +40,11 @@ Vue.component('Board', {
         return;
       }
 
+      if (this.newCardItems.some(item => item.text.trim() === '')) {
+        alert('Все пункты должны быть заполнены');
+        return;
+      }
+
       this.cards0.push({
         id: Date.now(),
         title: this.newCardTitle,
