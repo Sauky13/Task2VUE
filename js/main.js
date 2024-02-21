@@ -146,43 +146,65 @@ Vue.component('Board', {
   },
 });
 
+
 Vue.component('Column', {
   props: {
     title: String,
-    cards: {
-      type: Array,
-      default: function () {
-        return [];
-      }
-    }
+    cards: Array
+  },
+  data() {
+    return {
+      draggingCard: null
+    };
   },
   template: `
-    <div class="column">
-      <h2>{{ title }}</h2>
-      <div class="cards">
-        <Card v-for="card in cards" :key="card.id" :card="card"></Card>
-      </div>
-    </div>
+  <div class="column" @dragover.prevent @drop="dropCard">
+  <h2>{{ title }}</h2>
+  <transition-group name="list" tag="div" class="cards">
+    <Card v-for="card in cards" :key="card.id" :card="card" @dragstart="dragStart" @dragend="dragEnd"></Card>
+  </transition-group>
+</div>
   `,
   methods: {
-    addCard() {
-      if (!this.maxCards || this.cards.length < this.maxCards) {
-        this.cards.push({ id: Date.now() });
+    dragStart(card) {
+      this.draggingCard = card;
+    },
+    dragEnd() {
+      this.draggingCard = null;
+    },
+    dropCard(event) {
+      const droppedCardId = event.dataTransfer.getData('text/plain');
+      const droppedCardIndex = this.cards.findIndex(card => card.id === parseInt(droppedCardId));
+      if (droppedCardIndex > -1) {
+        this.cards.splice(droppedCardIndex, 1);
+      }
+      const position = this.findCardPosition(event.clientY);
+      this.cards.splice(position, 0, this.draggingCard);
+      this.$emit('update:cards', this.cards);
+    },
+    findCardPosition(clientY) {
+      const cardsElements = this.$el.querySelectorAll('.card');
+      const targetElement = Array.from(cardsElements).find(cardElement => cardElement.getBoundingClientRect().top + cardElement.getBoundingClientRect().height / 2 > clientY);
+      if (targetElement) {
+        return Array.from(cardsElements).indexOf(targetElement);
+      } else {
+        return this.cards.length;
       }
     },
   },
 });
 
+
 Vue.component('Card', {
   props: ['card'],
   template: `
-    <div class="card">
-      <h3>{{ card.title }}</h3>
-      <ul>
-        <ListItem v-for="item in card.items" :key="item.id" :item="item"></ListItem>
-      </ul>
-      <p v-if="card.completedAt">Завершено: {{ formatDate(card.completedAt) }}</p>
-    </div>
+  <div class="card" :draggable="true" @dragstart="dragStart" @dragend="dragEnd">
+  <h3>{{ card.title }}</h3>
+  <ul>
+    <ListItem v-for="item in card.items" :key="item.id" :item="item"></ListItem>
+  </ul>
+  <p v-if="card.completedAt">Завершено: {{ formatDate(card.completedAt) }}</p>
+</div>
   `,
   data() {
     return {
@@ -190,6 +212,13 @@ Vue.component('Card', {
     };
   },
   methods: {
+    dragStart(event) {
+      event.dataTransfer.setData('text/plain', this.card.id);
+      this.$emit('dragstart', this.card);
+    },
+    dragEnd() {
+      this.$emit('dragend');
+    },
     addItem() {
       this.items.push({ id: Date.now(), checked: false });
     },
@@ -204,6 +233,8 @@ Vue.component('Card', {
     },
   },
 });
+
+
 Vue.component('ListItem', {
   props: ['item'],
   template: `
