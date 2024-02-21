@@ -101,11 +101,27 @@ Vue.component('Board', {
       });
       
       this.firstColumnBlocked = this.cards50.length === this.maxCardsInSecondColumn && this.cards0.length > 0;
-      this.cards0.forEach(card => {
-        card.items.forEach(item => {
-          item.disabled = this.firstColumnBlocked;
+      if (this.cards50.length === 5) {
+        const is50PercentProgress = this.cards0.some(card => {
+          const checkedItems = card.items.filter(item => item.checked).length;
+          const progress = checkedItems / card.items.length;
+          return progress >= 0.5;
         });
+    
+        this.firstColumnBlocked = is50PercentProgress;
+        this.cards0.forEach(card => {
+          card.items.forEach(item => {
+            item.disabled = this.firstColumnBlocked;
+          });
+          
+        });
+        this.cards50.forEach(card => {
+          card.items.forEach(item => {
+              item.disabled = false;
+          });
       });
+        
+      }
       this.saveLocale();
     },
     saveLocale() {
