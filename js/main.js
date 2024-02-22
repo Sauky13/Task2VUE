@@ -130,6 +130,20 @@ Vue.component('Board', {
       localStorage.setItem('cards100', JSON.stringify(this.cards100));
     },
   },
+  watch: {
+    cards0: {
+      handler() {
+        this.checkCardProgress();
+      },
+      deep: true,
+    },
+    cards50: {
+      handler() {
+        this.checkCardProgress();
+      },
+      deep: true,
+    },
+  },
 });
 
 
